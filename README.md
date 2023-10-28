@@ -1,10 +1,11 @@
 [![](https://github.com/ros-drivers/velodyne/workflows/Basic%20Build%20Workflow/badge.svg)](https://github.com/ros-drivers/velodyne/actions)
 
 About this fork
+===============
 
 I created this fork of the ROS velodyne library to make it lighter that allows me to use only one node for both reading and conversion to PointCloud2. I would also like to add some new configuration parameters and fix some bugs that I encountered using it.
 
-Overview 
+About the main velodyne project
 ========
 
 Velodyne<sup>1</sup> is a collection of ROS<sup>2</sup> packages supporting `Velodyne high
