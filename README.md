@@ -3,7 +3,11 @@
 About this fork
 ===============
 
-I created this fork of the ROS velodyne library to make it lighter that allows me to use only one node for both reading and conversion to PointCloud2. I would also like to add some new configuration parameters and fix some bugs that I encountered using it.
+I created this fork of the ROS velodyne library to make it lighter that allows me to use only one node for both reading and conversion to PointCloud2. 
+For my purpose, I won't need the part of the library that does the laser scan so I'll remove that part.
+I would also like to add some new configuration parameters and fix some bugs that I encountered using it.
+
+**Warning: This project is still in development and is not usable at present.**
 
 About the main velodyne project
 ========
