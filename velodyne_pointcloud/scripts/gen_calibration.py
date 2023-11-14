@@ -55,7 +55,7 @@ import yaml
 # parse the command line
 usage = """usage: %prog infile.xml [outfile.yaml]
 
-       Default output file is input file with .yaml suffix."""
+Default output file is input file with .yaml suffix."""
 parser = optparse.OptionParser(usage=usage)
 options, args = parser.parse_args()
 
@@ -109,7 +109,7 @@ enabled = db.find('DB/enabled_')
 if enabled == None:
     print('no enabled tags found: assuming all 64 enabled')
     num_enabled = 64
-    enabled_lasers = [True for i in xrange(num_enabled)]
+    enabled_lasers = [True for i in range(num_enabled)]
 else:
     index = 0
     for el in enabled:

@@ -54,11 +54,4 @@
     <arg name="organize_cloud" value="$(arg organize_cloud)"/>
   </include>
 
-  <!-- start laserscan nodelet -->
-  <include file="$(find velodyne_pointcloud)/launch/laserscan_nodelet.launch">
-    <arg name="manager" value="$(arg manager)" />
-    <arg name="ring" value="$(arg laserscan_ring)"/>
-    <arg name="resolution" value="$(arg laserscan_resolution)"/>
-  </include>
-
 </launch>
