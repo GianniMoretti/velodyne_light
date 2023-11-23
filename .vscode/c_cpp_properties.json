@@ -1,25 +1,22 @@
 {
-  "configurations": [
-    {
-      "browse": {
-        "databaseFilename": "${default}",
-        "limitSymbolsToIncludedHeaders": false
-      },
-      "includePath": [
-        "/home/slam/catkin_ws_lidar/devel/include/**",
-        "/opt/ros/noetic/include/**",
-        "/home/slam/catkin_ws_lidar/src/velodyne_light/velodyne_driver/include/**",
-        "/home/slam/catkin_ws_lidar/src/velodyne_light/velodyne_laserscan/include/**",
-        "/home/slam/catkin_ws_lidar/src/velodyne_light/velodyne_pcl/include/**",
-        "/home/slam/catkin_ws_lidar/src/velodyne_light/velodyne_pointcloud/include/**",
-        "/usr/include/**"
-      ],
-      "name": "ROS",
-      "intelliSenseMode": "gcc-x64",
-      "compilerPath": "/usr/bin/gcc",
-      "cStandard": "gnu11",
-      "cppStandard": "c++14"
-    }
-  ],
-  "version": 4
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "${default}",
+                "limitSymbolsToIncludedHeaders": false
+            },
+            "includePath": [
+                "/home/slam/catkin_ws_lidar/devel/include/**",
+                "/opt/ros/noetic/include/**",
+                "/home/slam/catkin_ws_lidar/src/velodyne_light/velodyne_light/include/**",
+                "/usr/include/**"
+            ],
+            "name": "ROS",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu11",
+            "cppStandard": "c++14"
+        }
+    ],
+    "version": 4
 }

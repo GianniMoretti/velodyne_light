@@ -14,9 +14,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <exec_depend>velodyne_driver</exec_depend>
+  <exec_depend>velodyne_light</exec_depend>
   <exec_depend>velodyne_msgs</exec_depend>
-  <exec_depend>velodyne_pointcloud</exec_depend>
 
   <export>
     <metapackage/>
