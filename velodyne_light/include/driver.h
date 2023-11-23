@@ -36,8 +36,8 @@
 #include <string>
 #include <ros/ros.h>
 
-#include <velodyne_msgs/VelodyneScan.h>
-#include <velodyne_light/input.h>
+#include "velodyne_msgs/VelodyneScan.h"
+#include "input.h"
 
 namespace velodyne_driver
 {
@@ -53,7 +53,6 @@ namespace velodyne_driver
     bool enabled;                    // polling is enabled
     bool timestamp_first_packet;
     int udp_port;
-    std::string dump_file;
     int afterZeroAng;
     int beforeZeroAng;
   };

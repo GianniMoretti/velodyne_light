@@ -41,8 +41,8 @@
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
 
-#include <velodyne_msgs/VelodyneScan.h>
-#include "velodyne_light/driver.h"
+#include "velodyne_msgs/VelodyneScan.h"
+#include "driver.h"
 
 namespace velodyne_driver
 {
@@ -132,18 +132,7 @@ namespace velodyne_driver
     ROS_INFO("expected frequency: %.3f (Hz)", scan_freq);
 
     config_.enabled = true;
-
-    // open Velodyne input device or file
-    if (config_.dump_file != "")// have PCAP file?
-      {
-        // read data from packet capture file
-        input_.reset(new velodyne_driver::InputPCAP(config_.udp_port, packet_rate, config_.dump_file));
-      }
-    else
-      {
-        // read data from live socket
-        input_.reset(new velodyne_driver::InputSocket(config_.ipAddr, config_.gpsTime, config_.udp_port));
-      }
+    input_.reset(new velodyne_driver::InputSocket(config_.ipAddr, config_.gpsTime, config_.udp_port));
   }
 
   /** poll the device

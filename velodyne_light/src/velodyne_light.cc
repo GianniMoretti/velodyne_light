@@ -6,8 +6,8 @@
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
 
-#include <velodyne_msgs/VelodyneScan.h>
-#include <velodyne_light/driver.h>
+#include "velodyne_msgs/VelodyneScan.h"
+#include "driver.h"
 
 int main(int argc, char** argv)
 {
@@ -22,7 +22,6 @@ int main(int argc, char** argv)
     node.param("device_ip", config.ipAddr, std::string("192.168.1.201"));
     node.param("frame_id", config.frame_id, std::string("velodyne"));
     node.param("model", config.model, std::string("VLP16"));
-    node.param("pcap", config.dump_file, std::string(""));
     node.param("port", config.udp_port, 2368);
     node.param("rpm", config.rpm, 600.0);
     node.param("gps_time", config.gpsTime, false);
@@ -37,19 +36,17 @@ int main(int argc, char** argv)
 
     // start the driver
     velodyne_driver::VelodyneDriver dvr(config);
-
     // loop until shut down or end of file  
     while(ros::ok())
     {
         velodyne_msgs::VelodyneScan scan;
         // poll device until end of file
         bool polled_ = dvr.poll(&scan);
-        if (!polled_)
+        if (!polled_){
             ROS_ERROR_THROTTLE(1.0, "Velodyne - Failed to poll device.");
             continue;
-
+        }
         //Qui si aggiunge la trasformazione
-
         //Pubblicare il messaggio
         output.publish(scan);
     }

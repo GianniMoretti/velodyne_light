@@ -47,7 +47,6 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <pcap.h>
 #include <poll.h>
 #include <string>
 #include <sstream>
@@ -55,8 +54,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include <velodyne_light/input.h>
-#include <velodyne_light/time_conversion.hpp>
+#include "input.h"
+#include "time_conversion.hpp"
 
 namespace velodyne_driver
 {
@@ -239,125 +238,6 @@ namespace velodyne_driver
     }
 
     return 1;
-  }
-
-  ////////////////////////////////////////////////////////////////////////
-  // InputPCAP class implementation
-  ////////////////////////////////////////////////////////////////////////
-
-  /** @brief constructor
-   *
-   *  @param port UDP port number
-   *  @param packet_rate expected device packet frequency (Hz)
-   *  @param filename PCAP dump file name
-   */
-  InputPCAP::InputPCAP(uint16_t port, double packet_rate, std::string filename,
-                      bool read_once, bool read_fast, bool pcap_time, double repeat_delay):
-    Input("", false, port),
-    packet_rate_(packet_rate),
-    filename_(filename),
-    read_once_(read_once),
-    read_fast_(read_fast),
-    pcap_time_(pcap_time),
-    repeat_delay_(repeat_delay)
-  {
-    pcap_ = NULL;  
-    empty_ = true;
-
-    if (read_once_)
-      ROS_INFO("Read input file only once.");
-    if (read_fast_)
-      ROS_INFO("Read input file as quickly as possible.");
-    if (repeat_delay_ > 0.0)
-      ROS_INFO("Delay %.3f seconds before repeating input file.", repeat_delay_);
-
-    // Open the PCAP dump file
-    ROS_INFO("Opening PCAP file \"%s\"", filename_.c_str());
-    if ((pcap_ = pcap_open_offline(filename_.c_str(), errbuf_) ) == NULL)
-      {
-        ROS_FATAL("Error opening Velodyne socket dump file.");
-        return;
-      }
-
-    std::stringstream filter;
-    if( devip_str_ != "" )              // using specific IP?
-      {
-        filter << "src host " << devip_str_ << " && ";
-      }
-    filter << "udp dst port " << port;
-    pcap_compile(pcap_, &pcap_packet_filter_, filter.str().c_str(), 1, PCAP_NETMASK_UNKNOWN);
-  }
-
-  /** destructor */
-  InputPCAP::~InputPCAP(void)
-  {
-    pcap_close(pcap_);
-  }
-
-  /** @brief Get one velodyne packet. */
-  int InputPCAP::getPacket(velodyne_msgs::VelodynePacket *pkt, const double time_offset)
-  {
-    struct pcap_pkthdr *header;
-    const u_char *pkt_data;
-
-    while (true)
-      {
-        int res;
-        if ((res = pcap_next_ex(pcap_, &header, &pkt_data)) >= 0)
-          {
-            // Skip packets not for the correct port and from the
-            // selected IP address.
-            if (0 == pcap_offline_filter(&pcap_packet_filter_,
-                                          header, pkt_data))
-              continue;
-
-            // Keep the reader from blowing through the file.
-            if (read_fast_ == false)
-              packet_rate_.sleep();
-            
-            memcpy(&pkt->data[0], pkt_data+42, packet_size);
-            if (!gps_time_) {
-              if (!pcap_time_) {
-                pkt->stamp = ros::Time::now(); // time_offset not considered here, as no synchronization required
-              } else {
-                pkt->stamp = ros::Time(header->ts.tv_sec, header->ts.tv_usec * 1000); // 
-              }
-            } else {
-              // time for each packet is a 4 byte uint located starting at offset 1200 in
-              // the data packet
-              pkt->stamp = rosTimeFromGpsTimestamp(&(pkt->data[1200]), header);
-            }
-            empty_ = false;
-            return 1;                   // success
-          }
-
-        if (empty_)                 // no data in file?
-          {
-            ROS_WARN("Error %d reading Velodyne packet: %s", res, pcap_geterr(pcap_));
-            return -1;
-          }
-
-        if (read_once_)
-          {
-            ROS_INFO("end of file reached -- done reading.");
-            return -1;
-          }
-        
-        if (repeat_delay_ > 0.0)
-          {
-            ROS_INFO("end of file reached -- delaying %.3f seconds.", repeat_delay_);
-            usleep(rint(repeat_delay_ * 1000000.0));
-          }
-
-        ROS_DEBUG("replaying Velodyne dump file");
-
-        // I can't figure out how to rewind the file, because it
-        // starts with some kind of header.  So, close the file
-        // and reopen it with pcap.
-        pcap_close(pcap_);
-        pcap_ = pcap_open_offline(filename_.c_str(), errbuf_);
-        empty_ = true;              // maybe the file disappeared?
-      } // loop back and try again
   }
 
 } // velodyne namespace
