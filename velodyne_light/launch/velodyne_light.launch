@@ -11,7 +11,8 @@
   <arg name="gps_time" default="false" />
   <arg name="beforeZeroAng" value="-1"/>
   <arg name="afterZeroAng" value="-1"/>
-  <arg name="timestamp_first_packet" default="false" />
+  <arg name="timestamp_first_packet" default="true" />
+  <arg name="calibration" default="$(find velodyne_light)/params/VLP16_hires_db.yaml"/>
 
 <!-- TODO: Da modificare -->
 
@@ -27,6 +28,7 @@
     <param name="beforeZeroAng" value="$(arg beforeZeroAng)"/>
     <param name="afterZeroAng" value="$(arg afterZeroAng)"/>
     <param name="timestamp_first_packet" value="$(arg timestamp_first_packet)"/>
+    <param name="calibration" value="$(arg calibration)"/>
   </node>
 
 </launch>

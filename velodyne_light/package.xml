@@ -54,6 +54,7 @@
   <exec_depend>roscpp</exec_depend>
   <depend> velodyne_msgs </depend>
   <depend> tf </depend>
+  <depend> sensor_msgs </depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

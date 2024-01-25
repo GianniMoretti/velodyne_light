@@ -10,6 +10,7 @@ project(velodyne_light)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   velodyne_msgs
+  sensor_msgs
   tf
 )
 
@@ -93,6 +94,29 @@ find_package(catkin REQUIRED COMPONENTS
 #   cfg/DynReconf2.cfg
 # )
 find_package(Boost REQUIRED COMPONENTS thread)
+find_package(Eigen3 REQUIRED)
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
+find_path(YAML_CPP_INCLUDE_DIR
+          NAMES yaml_cpp.h
+          PATHS ${YAML_CPP_INCLUDE_DIRS})
+find_library(YAML_CPP_LIBRARY
+            NAMES YAML_CPP
+            PATHS ${YAML_CPP_LIBRARY_DIRS})
+
+link_directories(${YAML_CPP_LIBRARY_DIRS})
+
+if(NOT ${YAML_CPP_VERSION} VERSION_LESS "0.5")
+  add_definitions(-DHAVE_NEW_YAMLCPP)
+endif(NOT ${YAML_CPP_VERSION} VERSION_LESS "0.5")
+
+
+
+include_directories(include ${catkin_INCLUDE_DIRS}
+  ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
+  ${EIGEN3_INCLUDE_DIR}
+)
 
 # libpcap provides no pkg-config or find_package module:
 
@@ -108,7 +132,7 @@ find_package(Boost REQUIRED COMPONENTS thread)
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES velodyne_light
-  CATKIN_DEPENDS roscpp velodyne_msgs tf
+  CATKIN_DEPENDS roscpp velodyne_msgs tf sensor_msgs
 #  DEPENDS system_lib
 )
 
@@ -140,6 +164,8 @@ add_executable(${PROJECT_NAME}_node
 src/velodyne_light.cc
 src/input.cc 
 src/driver.cc
+src/rawdata.cc
+src/calibration.cc
 )
 
 ## Rename C++ executable without prefix
@@ -155,6 +181,7 @@ src/driver.cc
 ## Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
   ${catkin_LIBRARIES}
+  ${YAML_CPP_LIBRARIES}
 )
 
 #############

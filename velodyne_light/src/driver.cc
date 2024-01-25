@@ -46,7 +46,6 @@
 
 namespace velodyne_driver
 {
-
   VelodyneDriver::VelodyneDriver(DriverParam config):config_(config)
   { 
     //validate string, determine packet rate
@@ -112,7 +111,7 @@ namespace velodyne_driver
     {
       ROS_INFO_STREAM("FOV restriction deactivated.");
     }
-    else if (180 <= config_.beforeZeroAng <= 360 && 0 <= config_.afterZeroAng <= 180)
+    else if (config_.beforeZeroAng >= 180 && config_.beforeZeroAng <= 360 && config_.afterZeroAng <= 180 && config_.afterZeroAng >= 0)  //TODO: questo if in realtà non funziona!!
     {
         ROS_INFO_STREAM("FOV restriction activated from" << config_.beforeZeroAng << " and " << config_.afterZeroAng);
         // Convert cut_angle from radian to one-hundredth degree,
@@ -150,9 +149,9 @@ namespace velodyne_driver
 
     // Allocate a new shared pointer for zero-copy sharing with other nodelets.
     //velodyne_msgs::VelodyneScanPtr scan(new velodyne_msgs::VelodyneScan);            //Va combiato con il pointer della funzione
-
-    if(180 <= config_.beforeZeroAng <= 360 && 0 <= config_.afterZeroAng <= 180) //FOV restiriction activated
+    if (config_.beforeZeroAng >= 0 && config_.afterZeroAng >= 0) //FOV restiriction activated
     {
+
       scanPkg->packets.resize(config_.npackets);     //TODO: Controllare se va bene la freccia
       velodyne_msgs::VelodynePacket tmp_packet;
 
@@ -194,16 +193,17 @@ namespace velodyne_driver
     }
     
     // publish message using time of last packet read
-    ROS_DEBUG("Publishing a full Velodyne scan.");
+
     if (config_.timestamp_first_packet){
+
       scanPkg->header.stamp = scanPkg->packets.front().stamp;
     }
     else{
+
       scanPkg->header.stamp = scanPkg->packets.back().stamp;
     }
     scanPkg->header.frame_id = config_.frame_id;
 
     return true;
   }
-
 } // namespace velodyne_driver
