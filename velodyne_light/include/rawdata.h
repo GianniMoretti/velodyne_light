@@ -185,7 +185,7 @@ class RawData
      * @returns 0 if successful; errno value for failure
      */
     velodyne_pointcloud::Calibration* setup(std::string calibration_file, std::string model);
-    void unpack(const velodyne_msgs::VelodynePacket& pkt, DataContainerBase& data, const ros::Time& scan_start_time);
+    void unpack(const velodyne_msgs::VelodynePacket& pkt, DataContainerBase& data, const int npkg, const ros::Time& scan_start_time);
     int scansPerPacket() const;
 
   private:
@@ -213,8 +213,8 @@ class RawData
     bool buildTimings();
 
     /** add private function to handle the VLP16 **/
-    void unpack_vlp16(const velodyne_msgs::VelodynePacket& pkt, DataContainerBase& data, const ros::Time& scan_start_time);
-    void unpack_vls128(const velodyne_msgs::VelodynePacket &pkt, DataContainerBase& data, const ros::Time& scan_start_time);
+    void unpack_vlp16(const velodyne_msgs::VelodynePacket& pkt, DataContainerBase& data, const int npkg, const ros::Time& scan_start_time);
+    void unpack_vls128(const velodyne_msgs::VelodynePacket &pkt, DataContainerBase& data, const int npkg, const ros::Time& scan_start_time);
   };
 }  // namespace velodyne_rawdata
 

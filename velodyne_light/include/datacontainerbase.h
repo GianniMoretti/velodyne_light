@@ -71,13 +71,6 @@ namespace velodyne_rawdata
     }
   };
 
-/*Scusa Gianni per questo commentone:
-Il problema sta nel fatto che per qualche motivo la chiamata al costruttore di questi iteratori non funziona, 
-però usando la lista di init ovviamente ti dice che non esistono i Field. L'unica differenza che vedo è questa. 
-Forse per risparmiare tempo conviene tornare alla versione con ereditarietà e facciamo tutto con organized_cloud. 
-Sembra che se non diamo la lista di init per i vari iteratori, vada in errore perché c++ vorrebbe un costruttore di default.
-Nella versione normale del nodo questo si poteva fare perché prima veniva creato cloud, poi venivano usati gli iteratori.
-*/ 
   class DataContainerBase
   {
     public:
@@ -87,26 +80,7 @@ Nella versione normale del nodo questo si poteva fare perché prima veniva creat
       iter_x(cloud_obj.cloud, "x"), iter_y(cloud_obj.cloud, "y"), iter_z(cloud_obj.cloud, "z"),
       iter_ring(cloud_obj.cloud, "ring"), iter_intensity(cloud_obj.cloud, "intensity"), iter_time(cloud_obj.cloud, "time")
       {
-        //int fields = 6;
-        // cloud.fields.clear();
-        // cloud.fields.reserve(6);
-        // int offset = 0;
-        // offset = addPointField(cloud, "x", 1, sensor_msgs::PointField::FLOAT32, offset);
-        // offset = addPointField(cloud, "y", 1, sensor_msgs::PointField::FLOAT32, offset);
-        // offset = addPointField(cloud, "z", 1, sensor_msgs::PointField::FLOAT32, offset);
-        // offset = addPointField(cloud, "intensity", 1, sensor_msgs::PointField::FLOAT32, offset);
-        // offset = addPointField(cloud, "ring", 1, sensor_msgs::PointField::UINT16, offset);
-        // offset = addPointField(cloud, "time", 1, sensor_msgs::PointField::FLOAT32, offset);
-        // cloud.point_step = offset;
-        // cloud.row_step = init_width * cloud.point_step;
-
-        // iter_y = sensor_msgs::PointCloud2Iterator<float>(cloud, "y");
-        // iter_z = sensor_msgs::PointCloud2Iterator<float>(cloud, "z");
-        // iter_intensity = sensor_msgs::PointCloud2Iterator<float>(cloud, "intensity");
-        // iter_ring = sensor_msgs::PointCloud2Iterator<uint16_t>(cloud, "ring");
-        // iter_time = sensor_msgs::PointCloud2Iterator<float>(cloud, "time");
         cloud = cloud_obj.cloud;
-
       }
 
       void setup(const velodyne_msgs::VelodyneScan* scan_msg)
@@ -126,27 +100,19 @@ Nella versione normale del nodo questo si poteva fare perché prima veniva creat
         iter_time = sensor_msgs::PointCloud2Iterator<float >(cloud, "time");
       }
 
-      void addPoint(float x, float y, float z, const uint16_t ring, const uint16_t /*azimuth*/, const float distance, const float intensity, const float time)
+      void addPoint(int nfirings, float x, float y, float z, const uint16_t ring, const uint16_t /*azimuth*/, const float distance, const float intensity, const float time)
       {
-        transformPoint(x, y, z);
-        *(iter_x+ring) = x;
-        *(iter_y+ring) = y;
-        *(iter_z+ring) = z;
-        *(iter_intensity+ring) = intensity;
-        *(iter_ring+ring) = ring;
-        *(iter_time+ring) = time;
-      }
-
-      void newLine()
-      {
-        iter_x = iter_x + config_.init_width;
-        iter_y = iter_y + config_.init_width;
-        iter_z = iter_z + config_.init_width;
-        iter_ring = iter_ring + config_.init_width;
-        iter_intensity = iter_intensity + config_.init_width;
-        iter_time = iter_time + config_.init_width;
-        
-        ++cloud.height;
+        //transformPoint(x, y, z);
+        int offset = config_.init_width * nfirings;
+        *(iter_x + offset + ring) = x;
+        *(iter_y + offset + ring) = y;
+        *(iter_z + offset + ring) = z;
+        *(iter_intensity + offset + ring) = intensity;
+        *(iter_ring + offset + ring) = ring;
+        *(iter_time + offset + ring) = time;
+        if (ring == 15){
+          cloud.height++;
+        }
       }
 
       const sensor_msgs::PointCloud2& finishCloud()
@@ -164,7 +130,7 @@ Nella versione normale del nodo questo si poteva fare perché prima veniva creat
           cloud.header.frame_id = sensor_frame;
         }
 
-        ROS_INFO_STREAM("Prepared cloud width " << cloud.height * cloud.width << " Velodyne points, time: " << cloud.header.stamp);
+        //ROS_INFO_STREAM("Prepared cloud width " << cloud.height * cloud.width << " Velodyne points, time: " << cloud.header.stamp);
         return cloud;
       }
 

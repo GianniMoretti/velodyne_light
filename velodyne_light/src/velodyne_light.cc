@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv, "velodyne_light_node");
     ros::NodeHandle node;
-
+    const int NUM_THREADS = 8;
     // raw packet output topic
     //ros::Publisher output= node.advertise<velodyne_msgs::VelodyneScan>("velodyne_packets", 10);
     ros::Publisher output = node.advertise<sensor_msgs::PointCloud2>("velodyne_points", 10);
@@ -86,6 +86,7 @@ int main(int argc, char** argv)
         }
 
         // process each packet provided by the driver
+        //#pragma omp parallel for schedule(static)  num_threads(NUM_THREADS)
         for (size_t i = 0; i < scan_ptr->packets.size(); ++i)
         {
             // calculate individual transform for each packet to account for ego
@@ -94,7 +95,7 @@ int main(int argc, char** argv)
             {
                 // fixed frame not available
             }
-            data->unpack(scan_ptr->packets[i], *container_ptr, scan_ptr->header.stamp);
+            data->unpack(scan_ptr->packets[i], *container_ptr, i, scan_ptr->header.stamp);
         }
         // publish the accumulated cloud message
        // finishCloud = container_ptr->finishCloud();

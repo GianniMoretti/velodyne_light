@@ -242,20 +242,20 @@ namespace velodyne_rawdata
    *  @param pkt raw packet to unpack
    *  @param pc shared pointer to point cloud (points are appended)
    */
-  void RawData::unpack(const velodyne_msgs::VelodynePacket &pkt, DataContainerBase& data, const ros::Time& scan_start_time)
+  void RawData::unpack(const velodyne_msgs::VelodynePacket &pkt, DataContainerBase& data, const int npkg, const ros::Time& scan_start_time)
   {
     using velodyne_pointcloud::LaserCorrection;
     ROS_DEBUG_STREAM("Received packet, time: " << pkt.stamp);
 
     /** special parsing for the VLS128 **/
     if (pkt.data[1205] == VLS128_MODEL_ID) { // VLS 128
-      unpack_vls128(pkt, data, scan_start_time);
+      unpack_vls128(pkt, data, npkg, scan_start_time);
       return;
     }
 
     /** special parsing for the VLP16 **/
     if (calibration_.num_lasers == 16){
-      unpack_vlp16(pkt, data, scan_start_time);
+      unpack_vlp16(pkt, data, npkg, scan_start_time);
       return;
     }
 
@@ -291,7 +291,7 @@ namespace velodyne_rawdata
 
         if (tmp.uint == 0){ // no valid laser beam return
           // call to addPoint is still required since output could be organized
-          data.addPoint(nanf(""), nanf(""), nanf(""), corrections.laser_ring, raw->blocks[i].rotation, nanf(""), nanf(""), time);
+          //data.addPoint(nanf(""), nanf(""), nanf(""), corrections.laser_ring, raw->blocks[i].rotation, nanf(""), nanf(""), time);
           continue;
         }
 
@@ -388,9 +388,9 @@ namespace velodyne_rawdata
         intensity = (intensity < min_intensity) ? min_intensity : intensity;
         intensity = (intensity > max_intensity) ? max_intensity : intensity;
 
-        data.addPoint(x_coord, y_coord, z_coord, corrections.laser_ring, raw->blocks[i].rotation, distance, intensity, time);
+        //data.addPoint(x_coord, y_coord, z_coord, corrections.laser_ring, raw->blocks[i].rotation, distance, intensity, time);    //TODO: Va riaggiunto per farlo funzionare
       }
-      data.newLine();
+      //data.newLine();                          //TODO: non esiste più
     }
   }
 
@@ -399,7 +399,7 @@ namespace velodyne_rawdata
    *  @param pkt raw packet to unpack
    *  @param pc shared pointer to point cloud (points are appended)
    */
-  void RawData::unpack_vls128(const velodyne_msgs::VelodynePacket &pkt, DataContainerBase& data, const ros::Time& scan_start_time) {
+  void RawData::unpack_vls128(const velodyne_msgs::VelodynePacket &pkt, DataContainerBase& data, const int nblock, const ros::Time& scan_start_time) {
 
     float azimuth_diff, azimuth_corrected_f;
     float last_azimuth_diff = 0;
@@ -502,19 +502,19 @@ namespace velodyne_rawdata
         // Compute the distance in the xy plane (w/o accounting for rotation)
         xy_distance = distance * cos_vert_angle;
 
-        data.addPoint(xy_distance * cos_rot_angle,
-                      -(xy_distance * sin_rot_angle),
-                      distance * sin_vert_angle,
-                      corrections.laser_ring,
-                      azimuth_corrected,
-                      distance,
-                      current_block.data[k + 2],
-                      time);
+        // data.addPoint(//da aiiungere roba qui, xy_distance * cos_rot_angle,                      //TODO: da cambiare per far funzionare
+        //               -(xy_distance * sin_rot_angle),
+        //               distance * sin_vert_angle,
+        //               corrections.laser_ring,
+        //               azimuth_corrected,
+        //               distance,
+        //               current_block.data[k + 2],
+        //               time);
       }
       if (current_block.header == VLS128_BANK_4)
       {
         // add a new line only after the last bank (VLS128_BANK_4)
-        data.newLine();
+        //data.newLine();                                                                   //TODO: da cambiare al nuovo sistema
       }
     }
   }
@@ -524,7 +524,7 @@ namespace velodyne_rawdata
    *  @param pkt raw packet to unpack
    *  @param pc shared pointer to point cloud (points are appended)
    */
-  void RawData::unpack_vlp16(const velodyne_msgs::VelodynePacket &pkt, DataContainerBase& data, const ros::Time& scan_start_time)
+  void RawData::unpack_vlp16(const velodyne_msgs::VelodynePacket &pkt, DataContainerBase& data, const int npkg ,const ros::Time& scan_start_time)
   {
     float azimuth;
     float azimuth_diff;
@@ -589,12 +589,8 @@ namespace velodyne_rawdata
           float sin_rot_correction = corrections.sin_rot_correction;
           // cos(a-b) = cos(a)*cos(b) + sin(a)*sin(b)
           // sin(a-b) = sin(a)*cos(b) - cos(a)*sin(b)
-          float cos_rot_angle = 
-            cos_rot_table_[azimuth_corrected] * cos_rot_correction + 
-            sin_rot_table_[azimuth_corrected] * sin_rot_correction;
-          float sin_rot_angle = 
-            sin_rot_table_[azimuth_corrected] * cos_rot_correction - 
-            cos_rot_table_[azimuth_corrected] * sin_rot_correction;
+          float cos_rot_angle = cos_rot_table_[azimuth_corrected] * cos_rot_correction + sin_rot_table_[azimuth_corrected] * sin_rot_correction;
+          float sin_rot_angle = sin_rot_table_[azimuth_corrected] * cos_rot_correction - cos_rot_table_[azimuth_corrected] * sin_rot_correction;
           float horiz_offset = corrections.horiz_offset_correction;
           float vert_offset = corrections.vert_offset_correction;
           // Compute the distance in the xy plane (w/o accounting for rotation)
@@ -615,15 +611,9 @@ namespace velodyne_rawdata
           float distance_corr_x = 0;
           float distance_corr_y = 0;
           if (corrections.two_pt_correction_available) {
-            distance_corr_x = 
-              (corrections.dist_correction - corrections.dist_correction_x)
-                * (xx - 2.4) / (25.04 - 2.4) 
-              + corrections.dist_correction_x;
+            distance_corr_x = (corrections.dist_correction - corrections.dist_correction_x) * (xx - 2.4) / (25.04 - 2.4) + corrections.dist_correction_x;
             distance_corr_x -= corrections.dist_correction;
-            distance_corr_y = 
-              (corrections.dist_correction - corrections.dist_correction_y)
-                * (yy - 1.93) / (25.04 - 1.93)
-              + corrections.dist_correction_y;
+            distance_corr_y = (corrections.dist_correction - corrections.dist_correction_y) * (yy - 1.93) / (25.04 - 1.93) + corrections.dist_correction_y;
             distance_corr_y -= corrections.dist_correction;
           }
           float distance_x = distance + distance_corr_x;
@@ -631,14 +621,14 @@ namespace velodyne_rawdata
            * was added to the expression due to the mathemathical
            * model we used.
            */
-          xy_distance = distance_x * cos_vert_angle - vert_offset * sin_vert_angle ;
+          xy_distance = distance_x * cos_vert_angle - vert_offset * sin_vert_angle;
           x = xy_distance * sin_rot_angle - horiz_offset * cos_rot_angle;
           float distance_y = distance + distance_corr_y;
           /**the new term of 'vert_offset * sin_vert_angle'
            * was added to the expression due to the mathemathical
            * model we used.
            */
-          xy_distance = distance_y * cos_vert_angle - vert_offset * sin_vert_angle ;
+          xy_distance = distance_y * cos_vert_angle - vert_offset * sin_vert_angle;
           y = xy_distance * cos_rot_angle + horiz_offset * sin_rot_angle;
           // Using distance_y is not symmetric, but the velodyne manual
           // does this.
@@ -663,9 +653,9 @@ namespace velodyne_rawdata
           float time = 0;
           if (timing_offsets.size())
             time = timing_offsets[block][firing * 16 + dsr] + time_diff_start_to_this_packet;
-          data.addPoint(x_coord, y_coord, z_coord, corrections.laser_ring, azimuth_corrected, distance, intensity, time);
+          int offset = (npkg * BLOCKS_PER_PACKET * VLP16_FIRINGS_PER_BLOCK + VLP16_FIRINGS_PER_BLOCK * block + firing);
+          data.addPoint(offset, x_coord, y_coord, z_coord, corrections.laser_ring, azimuth_corrected, distance, intensity, time);
         }
-        data.newLine();
       }
     }
   }
