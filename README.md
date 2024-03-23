@@ -7,7 +7,16 @@ I created this fork of the ROS velodyne library to make it lighter that allows m
 For my purpose, I won't need the part of the library that does the laser scan so I'll remove that part.
 I would also like to add some new configuration parameters and fix some bugs that I encountered using it.
 
-**Warning: This project is still in development and is not usable at present.**
+**Warning: This project is still in development.**
+
+**NEW EDIT:**
+Finally the code is working but unfortunately now it is only compatible with VLP-16 models, I hope in the future to be able to modify the code to make it work with all possible lidars (it is not a very difficult thing, it only takes time and study of the documentation), for now I intend to focus on other points of the node, such as its performance.
+
+The changes made to the original repo in particular are:
+- removal of the nodelet (now it is a single node).
+- removal of the dynamic configurator.
+- removal of the disordered cloud and modification of the ordered one.
+- adding some parameters (FOV orizzontale).
 
 About the main velodyne project
 ========
